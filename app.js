@@ -412,8 +412,15 @@ function switchRole(socket, data){
     return
   }
 
-  if (room.players.some(player => player.team === currentPlayer.team && player.role === 'spymaster')) {
-    socket.emit('switchRoleResponse', {success:false})
+  // Do not allow to switch to spymaster if there is already one in the team
+  if (data.role === 'spymaster') {
+    for (let player in ROOM_LIST[room].players) {
+      const otherPlayer = PLAYER_LIST[player];
+      if (otherPlayer !== currentPlayer && otherPlayer.team === currentPlayer.team && otherPlayer.role === 'spymaster') {
+        socket.emit('switchRoleResponse', {success:false})
+        return
+      }
+    }
   }
 
   currentPlayer.role = data.role; // Set the new role
